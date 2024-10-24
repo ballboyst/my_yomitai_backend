@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: yomitai_app
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    network_mode: service:db
+
+    environment:
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: example
+      MYSQL_DB: devdb
+      DATABASE_URL: mysql://mysql:example@localhost:3306/devdb
+    depends_on:
+      - db
+
+  db:
+    container_name: yomitai_db
+    image: mysql:latest
+    restart: unless-stopped
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DB: mysql
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+      MYSQL_CHARACTER_SET_SERVER: 'utf8mb4'
+      MYSQL_COLLATION_SERVER: 'utf8mb4_unicode_ci'
+
+volumes:
+  mysql-data:
